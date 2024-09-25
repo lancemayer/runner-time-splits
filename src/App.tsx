@@ -1,35 +1,53 @@
-import { createSignal } from 'solid-js'
-import solidLogo from './assets/solid.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { ChronoUnit, LocalDateTime } from "@js-joda/core";
+import { createSignal } from "solid-js";
+import "./App.css";
 
 function App() {
-  const [count, setCount] = createSignal(0)
+	const [startTime, setStartTime] = createSignal<LocalDateTime>();
+	const [splitTime, setSplitTime] = createSignal<LocalDateTime>();
+	const [timer, setTimer] = createSignal<number | null>(null);
+	const [elapsedTime, setElapsedTime] = createSignal<number | null>(null);
 
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} class="logo" alt="Vite logo" />
-        </a>
-        <a href="https://solidjs.com" target="_blank">
-          <img src={solidLogo} class="logo solid" alt="Solid logo" />
-        </a>
-      </div>
-      <h1>Vite + Solid</h1>
-      <div class="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count()}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p class="read-the-docs">
-        Click on the Vite and Solid logos to learn more
-      </p>
-    </>
-  )
+	return (
+		<>
+			<div class="card">
+				<button
+					onClick={() => {
+						setStartTime(LocalDateTime.now());
+
+						setTimer(
+							setInterval(() => {
+								setElapsedTime(
+									startTime()?.until(LocalDateTime.now(), ChronoUnit.SECONDS)
+								);
+							}, 1000)
+						);
+					}}
+				>
+					Start
+				</button>
+				<button onClick={() => setSplitTime(LocalDateTime.now())}>Split</button>
+				<p>
+					Time elapsed:{" "}
+					{elapsedTime()
+						? Math.floor(elapsedTime() / 60) +
+						  ":" +
+						  (elapsedTime() % 60).toString().padStart(2, "0")
+						: ""}
+				</p>
+				<p>
+					split:{" "}
+					{splitTime()
+						? startTime()?.until(splitTime(), ChronoUnit.MINUTES).toString() +
+						  ":" +
+						  (startTime()?.until(splitTime(), ChronoUnit.SECONDS) % 60)
+								.toString()
+								.padStart(2, "0")
+						: ""}
+				</p>
+			</div>
+		</>
+	);
 }
 
-export default App
+export default App;
